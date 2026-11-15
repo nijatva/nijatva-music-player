@@ -135,7 +135,7 @@ fun App() {
 
         if (showPlayer) {
             NowPlayingScreen(
-                controller = controller,
+                controller = playback,
                 isFavourite = current != null && favourites.contains(current.id),
                 onToggleFavourite = {
                     current?.id?.let { id ->
@@ -267,7 +267,7 @@ fun App() {
                             tracks = visible,
                             scanning = scanning,
                             mergeAlbums = mergeAlbums,
-                            controller = controller,
+                            controller = playback,
                             favourites = favourites,
                             onPlay = { list, index -> playback.playNow(list, index) },
                             onRescan = { scanToken += 1 },
@@ -277,7 +277,7 @@ fun App() {
                             tracks = tracks,
                             scanning = scanning,
                             mergeAlbums = mergeAlbums,
-                            controller = controller,
+                            controller = playback,
                             favourites = favourites,
                             onPlay = { list, index -> playback.playNow(list, index) },
                             onRescan = { scanToken += 1 },
