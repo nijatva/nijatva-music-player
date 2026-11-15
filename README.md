@@ -10,6 +10,8 @@ install.
 
 App name: **Music** · Android package: `com.nijatva.music.player`
 
+**[Download the APK](https://github.com/vasudev-work/nijatva-music-player/releases/latest)** · **[Web player](https://vasudev-work.github.io/nijatva-music-player/player/)**
+
 | Platform | How it plays | How it finds music | Artifact |
 |---|---|---|---|
 | **Android** | AndroidX Media3 (ExoPlayer) | MediaStore, with real tags and cover art | `app-debug.apk` |
