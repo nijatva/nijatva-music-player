@@ -1,6 +1,7 @@
 package com.nijatva.music.player.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -25,7 +26,15 @@ enum class Accent(val label: String, val argb: Long) {
 val Accent.color: Color get() = Color(argb)
 
 @Composable
-private fun schemeFor(mode: ThemeMode, accent: Accent) = when (mode) {
+private fun schemeFor(mode: ThemeMode, accent: Accent): ColorScheme {
+    // "System" follows the platform: black when it is in dark mode, light otherwise.
+    val resolved = if (mode == ThemeMode.System) {
+        if (isSystemInDarkTheme()) ThemeMode.Black else ThemeMode.Light
+    } else {
+        mode
+    }
+
+    return when (resolved) {
     ThemeMode.Light -> lightColorScheme(
         primary = accent.color,
         onPrimary = Color.White,
@@ -68,8 +77,8 @@ private fun schemeFor(mode: ThemeMode, accent: Accent) = when (mode) {
         outline = Color(0xFF2A2A2A),
     )
 
-    // "System" resolves to black when the platform is in dark mode.
-    ThemeMode.System -> if (isSystemInDarkTheme()) schemeFor(ThemeMode.Black, accent) else schemeFor(ThemeMode.Light, accent)
+    ThemeMode.System -> lightColorScheme(primary = accent.color, background = Color(0xFFFDFDFD))
+    }
 }
 
 @Composable
