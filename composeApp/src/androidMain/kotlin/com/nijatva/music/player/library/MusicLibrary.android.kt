@@ -17,6 +17,7 @@ private class AndroidMusicLibrary(private val context: Context) : MusicLibrary {
 
     override val sourceLabel: String = "MediaStore"
 
+    @Suppress("DEPRECATION")
     override suspend fun scan(): List<Track> = withContext(Dispatchers.IO) {
         if (!hasAudioPermission(context)) return@withContext emptyList<Track>()
 
@@ -40,7 +41,6 @@ private class AndroidMusicLibrary(private val context: Context) : MusicLibrary {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 add(MediaStore.Audio.Media.RELATIVE_PATH)
             } else {
-                @Suppress("DEPRECATION")
                 add(MediaStore.Audio.Media.DATA)
             }
         }.toTypedArray()
@@ -68,7 +68,6 @@ private class AndroidMusicLibrary(private val context: Context) : MusicLibrary {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     c.getColumnIndex(MediaStore.Audio.Media.RELATIVE_PATH)
                 } else {
-                    @Suppress("DEPRECATION")
                     c.getColumnIndex(MediaStore.Audio.Media.DATA)
                 }
 
