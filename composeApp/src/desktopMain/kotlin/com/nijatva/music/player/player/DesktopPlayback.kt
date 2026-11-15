@@ -28,10 +28,8 @@ class DesktopPlayback(private val player: AudioPlayer) : Playback {
         private set
 
     override var shuffle by mutableStateOf(false)
-        private set
 
     override var repeat by mutableStateOf(RepeatMode.Off)
-        private set
 
     private val sleep = SleepTimer()
     override val sleepMinutes: Int get() = sleep.minutes
@@ -97,14 +95,6 @@ class DesktopPlayback(private val player: AudioPlayer) : Playback {
     override fun seekTo(positionMs: Long) {
         player.seekTo(positionMs)
         this.positionMs = positionMs.coerceAtLeast(0)
-    }
-
-    override fun setShuffle(enabled: Boolean) {
-        shuffle = enabled
-    }
-
-    override fun setRepeat(mode: RepeatMode) {
-        repeat = mode
     }
 
     override fun startSleepTimer(minutes: Int) {

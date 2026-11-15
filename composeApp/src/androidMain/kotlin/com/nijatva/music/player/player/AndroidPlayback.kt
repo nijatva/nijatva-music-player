@@ -49,11 +49,26 @@ class AndroidPlayback(context: Context) : Playback {
     override var durationMs by mutableStateOf(0L)
         private set
 
-    override var shuffle by mutableStateOf(false)
-        private set
+    private var shuffleState by mutableStateOf(false)
+    private var repeatState by mutableStateOf(RepeatMode.Off)
 
-    override var repeat by mutableStateOf(RepeatMode.Off)
-        private set
+    override var shuffle: Boolean
+        get() = shuffleState
+        set(value) {
+            shuffleState = value
+            controller?.shuffleModeEnabled = value
+        }
+
+    override var repeat: RepeatMode
+        get() = repeatState
+        set(value) {
+            repeatState = value
+            controller?.repeatMode = when (value) {
+                RepeatMode.Off -> Player.REPEAT_MODE_OFF
+                RepeatMode.All -> Player.REPEAT_MODE_ALL
+                RepeatMode.One -> Player.REPEAT_MODE_ONE
+            }
+        }
 
     override val sleepMinutes: Int get() = sleep.minutes
 
@@ -78,11 +93,11 @@ class AndroidPlayback(context: Context) : Playback {
         }
 
         override fun onRepeatModeChanged(repeatMode: Int) {
-            repeat = repeatMode.toRepeatMode()
+            repeatState = repeatMode.toRepeatMode()
         }
 
         override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-            shuffle = shuffleModeEnabled
+            shuffleState = shuffleModeEnabled
         }
     }
 
@@ -112,8 +127,8 @@ class AndroidPlayback(context: Context) : Playback {
         positionMs = c.currentPosition.coerceAtLeast(0L)
         val reported = c.duration
         if (reported > 0) durationMs = reported
-        repeat = c.repeatMode.toRepeatMode()
-        shuffle = c.shuffleModeEnabled
+        repeatState = c.repeatMode.toRepeatMode()
+        shuffleState = c.shuffleModeEnabled
         val id = c.currentMediaItem?.mediaId
         val position = queue.indexOfFirst { it.id == id }
         if (position >= 0) index = position
@@ -148,20 +163,6 @@ class AndroidPlayback(context: Context) : Playback {
     override fun seekTo(positionMs: Long) {
         controller?.seekTo(positionMs.coerceAtLeast(0L))
         this.positionMs = positionMs.coerceAtLeast(0L)
-    }
-
-    override fun setShuffle(enabled: Boolean) {
-        controller?.shuffleModeEnabled = enabled
-        shuffle = enabled
-    }
-
-    override fun setRepeat(mode: RepeatMode) {
-        controller?.repeatMode = when (mode) {
-            RepeatMode.Off -> Player.REPEAT_MODE_OFF
-            RepeatMode.All -> Player.REPEAT_MODE_ALL
-            RepeatMode.One -> Player.REPEAT_MODE_ONE
-        }
-        repeat = mode
     }
 
     override fun startSleepTimer(minutes: Int) {

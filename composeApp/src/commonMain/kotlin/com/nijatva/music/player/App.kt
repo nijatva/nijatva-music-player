@@ -218,7 +218,7 @@ fun App() {
                                         onClick = {
                                             menuOpen = false
                                             if (tracks.isNotEmpty()) {
-                                                playback.setShuffle(true)
+                                                playback.shuffle = true
                                                 playback.playNow(tracks.shuffled(), 0)
                                             }
                                         },

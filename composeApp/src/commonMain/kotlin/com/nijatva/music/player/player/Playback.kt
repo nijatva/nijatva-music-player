@@ -22,8 +22,8 @@ interface Playback {
     val isPlaying: Boolean
     val positionMs: Long
     val durationMs: Long
-    val shuffle: Boolean
-    val repeat: RepeatMode
+    var shuffle: Boolean
+    var repeat: RepeatMode
     val sleepMinutes: Int
 
     fun playNow(tracks: List<Track>, startIndex: Int = 0)
@@ -31,8 +31,6 @@ interface Playback {
     fun next()
     fun previous()
     fun seekTo(positionMs: Long)
-    fun setShuffle(enabled: Boolean)
-    fun setRepeat(mode: RepeatMode)
     fun startSleepTimer(minutes: Int)
     fun setEqualizer(gainsMb: List<Int>?)
 

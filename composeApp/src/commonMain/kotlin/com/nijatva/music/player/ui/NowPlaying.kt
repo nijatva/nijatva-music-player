@@ -161,7 +161,7 @@ fun NowPlayingScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-            IconButton(onClick = { controller.setShuffle(!controller.shuffle) }) {
+            IconButton(onClick = { controller.shuffle = !controller.shuffle }) {
                 Icon(
                     Icons.Rounded.Shuffle,
                     contentDescription = "Shuffle",
@@ -191,13 +191,11 @@ fun NowPlayingScreen(
                 Icon(Icons.Rounded.SkipNext, contentDescription = "Next", tint = scheme.onBackground)
             }
             IconButton(onClick = {
-                controller.setRepeat(
-                    when (controller.repeat) {
-                        RepeatMode.Off -> RepeatMode.All
-                        RepeatMode.All -> RepeatMode.One
-                        RepeatMode.One -> RepeatMode.Off
-                    },
-                )
+                controller.repeat = when (controller.repeat) {
+                    RepeatMode.Off -> RepeatMode.All
+                    RepeatMode.All -> RepeatMode.One
+                    RepeatMode.One -> RepeatMode.Off
+                }
             }) {
                 Icon(
                     if (controller.repeat == RepeatMode.One) Icons.Rounded.RepeatOne else Icons.Rounded.Repeat,
