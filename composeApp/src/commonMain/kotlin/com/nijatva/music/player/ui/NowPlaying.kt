@@ -44,13 +44,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.nijatva.music.player.player.PlaybackController
+import com.nijatva.music.player.player.Playback
 import com.nijatva.music.player.player.RepeatMode
 import com.nijatva.music.player.util.formatDuration
 
 @Composable
 fun NowPlayingScreen(
-    controller: PlaybackController,
+    controller: Playback,
     isFavourite: Boolean,
     onToggleFavourite: () -> Unit,
     onBack: () -> Unit,
@@ -161,7 +161,7 @@ fun NowPlayingScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-            IconButton(onClick = { controller.shuffle = !controller.shuffle }) {
+            IconButton(onClick = { controller.setShuffle(!controller.shuffle) }) {
                 Icon(
                     Icons.Rounded.Shuffle,
                     contentDescription = "Shuffle",
@@ -191,11 +191,13 @@ fun NowPlayingScreen(
                 Icon(Icons.Rounded.SkipNext, contentDescription = "Next", tint = scheme.onBackground)
             }
             IconButton(onClick = {
-                controller.repeat = when (controller.repeat) {
-                    RepeatMode.Off -> RepeatMode.All
-                    RepeatMode.All -> RepeatMode.One
-                    RepeatMode.One -> RepeatMode.Off
-                }
+                controller.setRepeat(
+                    when (controller.repeat) {
+                        RepeatMode.Off -> RepeatMode.All
+                        RepeatMode.All -> RepeatMode.One
+                        RepeatMode.One -> RepeatMode.Off
+                    },
+                )
             }) {
                 Icon(
                     if (controller.repeat == RepeatMode.One) Icons.Rounded.RepeatOne else Icons.Rounded.Repeat,

@@ -25,10 +25,19 @@ class MainActivity : ComponentActivity() {
 
     private val requestAudio = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
+    private val requestNotifications =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (!hasAudioPermission(this)) {
             requestAudio.launch(audioPermission())
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            requestNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
         setContent { App() }
     }

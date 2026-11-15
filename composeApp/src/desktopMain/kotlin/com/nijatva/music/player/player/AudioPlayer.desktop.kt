@@ -22,8 +22,7 @@ private class DesktopAudioPlayer : AudioPlayer {
     }
 
     override fun open(uri: String) {
-        val mrl = toMrl(uri)
-        player?.media()?.prepare(mrl)
+        player?.media()?.prepare(toMrl(uri))
     }
 
     override fun play() {
@@ -55,9 +54,30 @@ private class DesktopAudioPlayer : AudioPlayer {
     }
 }
 
+/** The small surface the desktop player needs from libVLC. */
+interface AudioPlayer {
+    fun open(uri: String)
+    fun play()
+    fun pause()
+    fun seekTo(positionMs: Long)
+    fun release()
+    fun positionMs(): Long
+    fun durationMs(): Long
+    fun isPlaying(): Boolean
+    fun setEqualizer(gainsMb: List<Int>?) {}
+}
+
 @Composable
-actual fun rememberAudioPlayer(): AudioPlayer {
+fun rememberAudioPlayer(): AudioPlayer {
     val player = remember { DesktopAudioPlayer() }
     DisposableEffect(player) { onDispose { player.release() } }
     return player
+}
+
+@Composable
+actual fun rememberPlayback(): Playback {
+    val player = rememberAudioPlayer()
+    val playback = remember(player) { DesktopPlayback(player) }
+    DisposableEffect(playback) { onDispose { playback.release() } }
+    return playback
 }

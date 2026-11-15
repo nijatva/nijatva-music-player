@@ -43,7 +43,7 @@ composeApp/
   src/commonMain/kotlin/com/nijatva/music/player/
     App.kt                    # shell: tabs, top bar menu, bottom navigation, radio
     model/Track.kt            # Track/Album/Artist/Folder + grouping helpers
-    player/AudioPlayer.kt     # expect: AudioPlayer + PlaybackController (queue, shuffle, repeat)
+    player/Playback.kt        # expect: Playback — the one interface the UI talks to
     library/MusicLibrary.kt   # expect: MusicLibrary.scan()
     ui/Theme.kt               # 4 themes × 3 accents
     ui/LibraryScreen.kt       # songs / albums / artists / genres / folders / queue
@@ -51,7 +51,7 @@ composeApp/
     ui/Settings.kt            # appearance, library options, developer card
     ui/Components.kt          # rows, pills, mini player
     util/Format.kt            # 3:07, "42 songs · 3 hr 12 min"
-  src/androidMain/…           # Media3 player, MediaStore library, permission, MainActivity
+  src/androidMain/…           # MediaSessionService, MediaController proxy, MediaStore library
   src/desktopMain/…           # vlcj player, filesystem library, main()
 web/                          # standalone HTML5 player (index.html, app.js, styles.css)
 docs/                         # GitHub Pages: landing page + copy of the web player
@@ -102,10 +102,23 @@ and the library lists your files; playback is a no-op rather than a crash.
   next/previous, <kbd>s</kbd> shuffle, <kbd>r</kbd> repeat, <kbd>m</kbd> mute, <kbd>/</kbd> search.
 - Lock-screen and OS media keys work through the Media Session API.
 
+## Playback
+
+Android playback lives in a foreground `MediaSessionService` (`service/MusicService.kt`).
+The service owns the one ExoPlayer and the MediaSession; the UI drives a `MediaController`
+and reads its state back. That is what keeps music playing when the app is swiped away,
+and what puts the track on the lock screen, in Bluetooth controls and in Assistant. The
+queue is handed to the session as MediaItems, so ExoPlayer itself handles next, previous,
+shuffle and repeat, and the notification always matches the app.
+
+Desktop uses `DesktopPlayback` — the same `Playback` interface, backed by libVLC in
+process.
+
+Equalizer, bass boost and virtualiser are attached to the ExoPlayer audio session inside
+the service, so presets survive track changes.
+
 ## Known limits
 
-- **No background playback service yet.** Audio stops when the Android app is swiped away.
-  A Media3 `MediaSessionService` with a notification is the next piece of work.
 - **Favourites live in memory.** There is no database on disk, so the list resets when the app closes.
 - **Desktop reads no tags.** Titles come from file names and albums from folder names; Android
   gets real tags from MediaStore.

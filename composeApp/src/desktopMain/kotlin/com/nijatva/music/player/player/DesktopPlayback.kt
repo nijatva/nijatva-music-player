@@ -1,6 +1,5 @@
 package com.nijatva.music.player.player
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -8,74 +7,47 @@ import com.nijatva.music.player.model.Track
 import kotlin.random.Random
 
 /**
- * The only thing the shared UI needs from a platform audio engine.
- *
- * The shared code owns the queue, shuffle, repeat and sleep timer; a platform only
- * has to play one URI at a time and report where it is.
+ * Queue and transport for the desktop build: the queue lives here and libVLC plays one
+ * URI at a time. Android uses a MediaSession instead — see [AndroidPlayback].
  */
-interface AudioPlayer {
-    fun open(uri: String)
-    fun play()
-    fun pause()
-    fun seekTo(positionMs: Long)
-    fun release()
-    fun positionMs(): Long
-    fun durationMs(): Long
-    fun isPlaying(): Boolean
+class DesktopPlayback(private val player: AudioPlayer) : Playback {
 
-    /** Five band gains in millibels (60..-60 typical); null resets to flat. No-op where unsupported. */
-    fun setEqualizer(gainsMb: List<Int>?) {}
-}
-
-@Composable
-expect fun rememberAudioPlayer(): AudioPlayer
-
-enum class RepeatMode { Off, All, One }
-
-/** Queue + transport state shared by every platform. */
-class PlaybackController(private val player: AudioPlayer) {
-
-    var queue by mutableStateOf<List<Track>>(emptyList())
+    override var queue by mutableStateOf<List<Track>>(emptyList())
         private set
 
-    var index by mutableStateOf(-1)
+    override var index by mutableStateOf(-1)
         private set
 
-    var isPlaying by mutableStateOf(false)
+    override var isPlaying by mutableStateOf(false)
         private set
 
-    var positionMs by mutableStateOf(0L)
+    override var positionMs by mutableStateOf(0L)
         private set
 
-    var durationMs by mutableStateOf(0L)
+    override var durationMs by mutableStateOf(0L)
         private set
 
-    var shuffle by mutableStateOf(false)
-    var repeat by mutableStateOf(RepeatMode.Off)
-    var sleepMinutes by mutableStateOf(0)
+    override var shuffle by mutableStateOf(false)
         private set
+
+    override var repeat by mutableStateOf(RepeatMode.Off)
+        private set
+
+    private val sleep = SleepTimer()
+    override val sleepMinutes: Int get() = sleep.minutes
+
+    override val current: Track? get() = queue.getOrNull(index)
 
     private var wasPlaying = false
 
-    val current: Track? get() = queue.getOrNull(index)
-    val hasNext: Boolean get() = queue.isNotEmpty() && (index < queue.lastIndex || repeat == RepeatMode.All || shuffle)
-    val hasPrevious: Boolean get() = queue.isNotEmpty() && (index > 0 || positionMs > 3_000L)
-
-    /** Replaces the queue and starts playing at [startIndex]. */
-    fun playNow(tracks: List<Track>, startIndex: Int = 0) {
+    override fun playNow(tracks: List<Track>, startIndex: Int) {
         if (tracks.isEmpty()) return
         queue = tracks
         index = startIndex.coerceIn(0, tracks.lastIndex)
         load()
     }
 
-    /** Plays [track], using [context] as the queue when that list contains it. */
-    fun playTrack(track: Track, context: List<Track>) {
-        val start = context.indexOfFirst { it.id == track.id }
-        if (start >= 0) playNow(context, start) else playNow(listOf(track), 0)
-    }
-
-    fun toggle() {
+    override fun toggle() {
         val track = current ?: return
         if (isPlaying) {
             player.pause()
@@ -89,9 +61,9 @@ class PlaybackController(private val player: AudioPlayer) {
         }
     }
 
-    fun next() {
+    override fun next() {
         if (queue.isEmpty()) return
-        index = when {
+        val target = when {
             shuffle && queue.size > 1 -> {
                 var candidate = Random.nextInt(queue.size)
                 if (candidate == index) candidate = (candidate + 1) % queue.size
@@ -100,7 +72,6 @@ class PlaybackController(private val player: AudioPlayer) {
             index < queue.lastIndex -> index + 1
             repeat == RepeatMode.All -> 0
             else -> {
-                // End of queue with repeat off: stop cleanly.
                 player.pause()
                 player.seekTo(0)
                 isPlaying = false
@@ -109,10 +80,11 @@ class PlaybackController(private val player: AudioPlayer) {
                 return
             }
         }
+        index = target
         load()
     }
 
-    fun previous() {
+    override fun previous() {
         if (queue.isEmpty()) return
         if (positionMs > 3_000L) {
             seekTo(0)
@@ -122,27 +94,28 @@ class PlaybackController(private val player: AudioPlayer) {
         load()
     }
 
-    fun seekTo(ms: Long) {
-        player.seekTo(ms)
-        positionMs = ms.coerceAtLeast(0)
+    override fun seekTo(positionMs: Long) {
+        player.seekTo(positionMs)
+        this.positionMs = positionMs.coerceAtLeast(0)
     }
 
-    fun startSleepTimer(minutes: Int) {
-        sleepMinutes = minutes.coerceAtLeast(0)
+    override fun setShuffle(enabled: Boolean) {
+        shuffle = enabled
     }
 
-    fun tickSleep() {
-        if (sleepMinutes <= 0) return
-        sleepMinutes -= 1
-        if (sleepMinutes == 0 && isPlaying) {
-            player.pause()
-            isPlaying = false
-            wasPlaying = false
-        }
+    override fun setRepeat(mode: RepeatMode) {
+        repeat = mode
     }
 
-    /** Called on a timer by the UI: refreshes position and advances at end of track. */
-    fun tick() {
+    override fun startSleepTimer(minutes: Int) {
+        sleep.start(minutes)
+    }
+
+    override fun setEqualizer(gainsMb: List<Int>?) {
+        player.setEqualizer(gainsMb)
+    }
+
+    override fun tick() {
         val track = current ?: return
         positionMs = player.positionMs()
         val reported = player.durationMs()
@@ -163,9 +136,14 @@ class PlaybackController(private val player: AudioPlayer) {
         }
         wasPlaying = playing
         isPlaying = playing
+        if (sleep.tick() && isPlaying) {
+            player.pause()
+            isPlaying = false
+            wasPlaying = false
+        }
     }
 
-    fun release() {
+    override fun release() {
         player.release()
     }
 

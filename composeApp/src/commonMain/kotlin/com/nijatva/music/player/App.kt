@@ -53,8 +53,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nijatva.music.player.library.rememberMusicLibrary
 import com.nijatva.music.player.model.Track
-import com.nijatva.music.player.player.PlaybackController
-import com.nijatva.music.player.player.rememberAudioPlayer
+import com.nijatva.music.player.player.Playback
+import com.nijatva.music.player.player.rememberPlayback
 import com.nijatva.music.player.ui.Accent
 import com.nijatva.music.player.ui.EqualizerDialog
 import com.nijatva.music.player.ui.LibraryScreen
@@ -80,8 +80,7 @@ fun App() {
     var mergeAlbums by remember { mutableStateOf(true) }
     var hideShortSongs by remember { mutableStateOf(true) }
 
-    val player = rememberAudioPlayer()
-    val controller = remember(player) { PlaybackController(player) }
+    val playback = rememberPlayback()
     val library = rememberMusicLibrary()
 
     var allTracks by remember { mutableStateOf<List<Track>>(emptyList()) }
@@ -104,17 +103,12 @@ fun App() {
         scanning = false
     }
 
-    LaunchedEffect(controller) {
-        var ticks = 0
+    LaunchedEffect(playback) {
         while (true) {
             delay(500)
-            controller.tick()
-            ticks += 1
-            if (ticks % 2 == 0) controller.tickSleep()
+            playback.tick()
         }
     }
-
-    DisposableEffect(player) { onDispose { controller.release() } }
 
     val tracks = remember(allTracks, hideShortSongs) {
         if (hideShortSongs) allTracks.filter { it.durationMs == 0L || it.durationMs >= 30_000L } else allTracks
@@ -131,13 +125,13 @@ fun App() {
     fun applyPreset(name: String) {
         preset = name
         val gains = equalizerPresets.firstOrNull { it.first == name }?.second
-        player.setEqualizer(gains)
+        playback.setEqualizer(gains)
     }
 
     NijatvaTheme(mode = mode, accent = accent) {
         val scheme = MaterialTheme.colorScheme
-        val current = controller.current
-        val progress = if (controller.durationMs > 0) controller.positionMs.toFloat() / controller.durationMs else 0f
+        val current = playback.current
+        val progress = if (playback.durationMs > 0) playback.positionMs.toFloat() / playback.durationMs else 0f
 
         if (showPlayer) {
             NowPlayingScreen(
@@ -159,11 +153,11 @@ fun App() {
                         if (current != null) {
                             MiniPlayer(
                                 track = current,
-                                isPlaying = controller.isPlaying,
+                                isPlaying = playback.isPlaying,
                                 progress = progress,
                                 onOpen = { showPlayer = true },
-                                onToggle = { controller.toggle() },
-                                onNext = { controller.next() },
+                                onToggle = { playback.toggle() },
+                                onNext = { playback.next() },
                             )
                         }
                         NavigationBar(containerColor = scheme.surface, tonalElevation = 0.dp) {
@@ -224,8 +218,8 @@ fun App() {
                                         onClick = {
                                             menuOpen = false
                                             if (tracks.isNotEmpty()) {
-                                                controller.shuffle = true
-                                                controller.playNow(tracks.shuffled(), 0)
+                                                playback.setShuffle(true)
+                                                playback.playNow(tracks.shuffled(), 0)
                                             }
                                         },
                                     )
@@ -275,7 +269,7 @@ fun App() {
                             mergeAlbums = mergeAlbums,
                             controller = controller,
                             favourites = favourites,
-                            onPlay = { list, index -> controller.playNow(list, index) },
+                            onPlay = { list, index -> playback.playNow(list, index) },
                             onRescan = { scanToken += 1 },
                         )
 
@@ -285,14 +279,14 @@ fun App() {
                             mergeAlbums = mergeAlbums,
                             controller = controller,
                             favourites = favourites,
-                            onPlay = { list, index -> controller.playNow(list, index) },
+                            onPlay = { list, index -> playback.playNow(list, index) },
                             onRescan = { scanToken += 1 },
                             foldersOnly = true,
                         )
 
                         HomeTab.Radio -> RadioScreen(
                             onPlayStream = { url ->
-                                controller.playNow(
+                                playback.playNow(
                                     listOf(
                                         Track(
                                             id = url,
@@ -329,8 +323,8 @@ fun App() {
 
         if (showSleep) {
             SleepTimerDialog(
-                current = controller.sleepMinutes,
-                onPick = { minutes -> controller.startSleepTimer(minutes); showSleep = false },
+                current = playback.sleepMinutes,
+                onPick = { minutes -> playback.startSleepTimer(minutes); showSleep = false },
                 onDismiss = { showSleep = false },
             )
         }

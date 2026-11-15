@@ -125,7 +125,7 @@ fun SettingsScreen(
 
         SectionLabel("About")
         Text(
-            "Nijatva Music 1.0.0",
+            "Nijatva Music 1.1.0",
             color = scheme.onBackground,
             fontWeight = FontWeight.Medium,
             fontSize = 15.sp,

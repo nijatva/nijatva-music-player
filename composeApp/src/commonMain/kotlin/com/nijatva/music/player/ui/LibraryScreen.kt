@@ -49,7 +49,7 @@ import com.nijatva.music.player.model.toAlbums
 import com.nijatva.music.player.model.toArtists
 import com.nijatva.music.player.model.toFolders
 import com.nijatva.music.player.model.toGenres
-import com.nijatva.music.player.player.PlaybackController
+import com.nijatva.music.player.player.Playback
 import com.nijatva.music.player.util.formatSummary
 
 enum class LibraryTab(val label: String) {
@@ -67,7 +67,7 @@ fun LibraryScreen(
     tracks: List<Track>,
     scanning: Boolean,
     mergeAlbums: Boolean,
-    controller: PlaybackController,
+    controller: Playback,
     favourites: Set<String>,
     onPlay: (List<Track>, Int) -> Unit,
     onRescan: () -> Unit,
