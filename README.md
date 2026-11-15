@@ -1,5 +1,7 @@
 <p align="center"><img src="assets/music.svg" width="96" alt="Music icon"></p>
 
+<!-- Icon: slate tile (#2E3641 → #3A4350) with the white beamed note. -->
+
 # Nijatva Music — audio player
 
 An offline music player for the audio files already on your device. One Compose

@@ -50,8 +50,8 @@ android {
         applicationId = "com.nijatva.music.player"
         minSdk = 24
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.1.0"
+        versionCode = 3
+        versionName = "1.1.1"
     }
 
     compileOptions {
@@ -73,7 +73,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "NijatvaMusic"
-            packageVersion = "1.1.0"
+            packageVersion = "1.1.1"
             description = "Nijatva Music — offline audio player"
         }
     }
