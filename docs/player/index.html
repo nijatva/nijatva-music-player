@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="black" data-accent="saffron">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Music — Nijatva</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="#" aria-label="Nijatva Music">
+    <span class="brand-mark">N</span>
+    <span class="brand-name">Music</span>
+  </a>
+  <div class="topbar-actions">
+    <button class="icon-btn" id="searchBtn" aria-label="Search" title="Search (/)">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4.5 4.5"/></svg>
+    </button>
+    <button class="icon-btn" id="menuBtn" aria-label="Menu" title="Menu">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="searchbar" id="searchbar" hidden>
+  <input id="search" type="search" placeholder="Songs, artists, albums" autocomplete="off" spellcheck="false">
+  <button class="icon-btn" id="searchClose" aria-label="Close search">
+    <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
+  </button>
+</div>
+
+<nav class="tabs" id="tabs" role="tablist">
+  <button class="tab is-active" data-view="songs" role="tab">Songs</button>
+  <button class="tab" data-view="albums" role="tab">Albums</button>
+  <button class="tab" data-view="artists" role="tab">Artists</button>
+  <button class="tab" data-view="folders" role="tab">Folders</button>
+  <button class="tab" data-view="queue" role="tab">Queue</button>
+</nav>
+
+<main id="main" class="main">
+  <section class="empty" id="empty">
+    <div class="empty-art">♪</div>
+    <h1>No music yet</h1>
+    <p>Nijatva Music plays the audio files on your device. Nothing is uploaded — files are read in this tab and stay here.</p>
+    <div class="empty-actions">
+      <button class="btn btn-primary" id="pickFiles">Choose files</button>
+      <button class="btn" id="pickFolder">Choose a folder</button>
+    </div>
+    <p class="hint">…or drop files anywhere on this page. Press <kbd>Space</kbd> to play, <kbd>←</kbd> <kbd>→</kbd> to seek.</p>
+  </section>
+  <div id="list" class="list" hidden></div>
+</main>
+
+<div class="mini" id="mini" hidden>
+  <div class="mini-progress"><span id="miniProgress"></span></div>
+  <button class="mini-body" id="miniOpen">
+    <span class="art art-sm" id="miniArt">♪</span>
+    <span class="mini-text">
+      <span class="mini-title" id="miniTitle">Nothing playing</span>
+      <span class="mini-artist" id="miniArtist">Pick a song to start</span>
+    </span>
+  </button>
+  <button class="icon-btn" id="miniPlay" aria-label="Play">
+    <svg viewBox="0 0 24 24" id="miniPlayIcon"><path d="M8 5v14l11-7z"/></svg>
+  </button>
+  <button class="icon-btn" id="miniNext" aria-label="Next">
+    <svg viewBox="0 0 24 24"><path d="M6 5l10 7-10 7z"/><path d="M18 5v14"/></svg>
+  </button>
+</div>
+
+<section class="player" id="player" hidden aria-label="Now playing">
+  <div class="player-head">
+    <button class="icon-btn" id="playerClose" aria-label="Back">
+      <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <span class="player-eyebrow">Now playing</span>
+    <button class="icon-btn" id="eqBtn" aria-label="Equalizer" title="Equalizer">
+      <svg viewBox="0 0 24 24"><path d="M6 20V10M6 6V4M12 20v-6M12 10V4M18 20v-9M18 7V4"/></svg>
+    </button>
+  </div>
+
+  <div class="art art-lg" id="playerArt">♪</div>
+
+  <div class="player-meta">
+    <h2 id="playerTitle">Nothing playing</h2>
+    <p id="playerArtist">—</p>
+  </div>
+
+  <input type="range" id="seek" class="seek" min="0" max="1000" value="0" step="1" aria-label="Seek">
+  <div class="times"><span id="timeNow">0:00</span><span id="timeTotal">--:--</span></div>
+
+  <div class="transport">
+    <button class="icon-btn" id="shuffleBtn" aria-label="Shuffle" title="Shuffle (S)">
+      <svg viewBox="0 0 24 24"><path d="M17 3l4 4-4 4"/><path d="M3 7h4l10 10h4"/><path d="M17 21l4-4-4-4"/><path d="M3 17h4l3-3"/></svg>
+    </button>
+    <button class="icon-btn" id="prevBtn" aria-label="Previous">
+      <svg viewBox="0 0 24 24"><path d="M18 5l-10 7 10 7z"/><path d="M6 5v14"/></svg>
+    </button>
+    <button class="play-btn" id="playBtn" aria-label="Play">
+      <svg viewBox="0 0 24 24" id="playIcon"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+    <button class="icon-btn" id="nextBtn" aria-label="Next">
+      <svg viewBox="0 0 24 24"><path d="M6 5l10 7-10 7z"/><path d="M18 5v14"/></svg>
+    </button>
+    <button class="icon-btn" id="repeatBtn" aria-label="Repeat" title="Repeat (R)">
+      <svg viewBox="0 0 24 24"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+    </button>
+  </div>
+
+  <div class="volume">
+    <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 8a5 5 0 0 1 0 8"/></svg>
+    <input type="range" id="volume" min="0" max="100" value="100" aria-label="Volume">
+    <button class="chip" id="sleepBtn" title="Sleep timer">Sleep</button>
+  </div>
+</section>
+
+<div class="menu" id="menu" hidden>
+  <button data-action="files">Choose files…</button>
+  <button data-action="folder">Choose a folder…</button>
+  <button data-action="stream">Play a stream URL…</button>
+  <button data-action="shuffle">Shuffle all</button>
+  <button data-action="sleep">Sleep timer…</button>
+  <button data-action="eq">Equalizer…</button>
+  <button data-action="appearance">Appearance…</button>
+</div>
+
+<div class="sheet" id="appearanceSheet" hidden>
+  <div class="sheet-card">
+    <h3>Appearance</h3>
+    <p class="label">Theme</p>
+    <div class="pill-row" id="themeRow">
+      <button class="pill" data-theme="system">System</button>
+      <button class="pill" data-theme="dark">Dark</button>
+      <button class="pill" data-theme="light">Light</button>
+      <button class="pill" data-theme="black">Black</button>
+    </div>
+    <p class="label">Accent colour</p>
+    <div class="pill-row" id="accentRow">
+      <button class="pill" data-accent="green">Green</button>
+      <button class="pill" data-accent="saffron">Saffron</button>
+      <button class="pill" data-accent="indigo">Indigo</button>
+    </div>
+    <p class="note">Saved in this browser only. Nothing about your choice leaves this device.</p>
+    <button class="btn btn-primary sheet-done" id="appearanceDone">Done</button>
+  </div>
+</div>
+
+<div class="sheet" id="eqSheet" hidden>
+  <div class="sheet-card">
+    <h3>Equalizer</h3>
+    <p class="label">Preset</p>
+    <div class="pill-row" id="eqPresets">
+      <button class="pill" data-eq="flat">Flat</button>
+      <button class="pill" data-eq="bass">Bass</button>
+      <button class="pill" data-eq="vocal">Vocal</button>
+      <button class="pill" data-eq="treble">Treble</button>
+      <button class="pill" data-eq="warm">Warm</button>
+    </div>
+    <div class="bands" id="bands"></div>
+    <p class="note">Applied live with Web Audio in this tab. No effect is ever written to the file.</p>
+    <button class="btn btn-primary sheet-done" id="eqDone">Done</button>
+  </div>
+</div>
+
+<div class="sheet" id="sleepSheet" hidden>
+  <div class="sheet-card">
+    <h3>Sleep timer</h3>
+    <p class="label">Stop playback after</p>
+    <div class="pill-row" id="sleepOptions">
+      <button class="pill" data-min="15">15 min</button>
+      <button class="pill" data-min="30">30 min</button>
+      <button class="pill" data-min="45">45 min</button>
+      <button class="pill" data-min="60">60 min</button>
+    </div>
+    <button class="btn sheet-done" id="sleepOff">Turn off</button>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept="audio/*,.mp3,.m4a,.flac,.ogg,.opus,.wav,.aac" multiple hidden>
+<input type="file" id="folderInput" webkitdirectory directory multiple hidden>
+
+<audio id="audio" preload="metadata"></audio>
+<div class="toast" id="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
