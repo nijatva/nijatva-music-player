@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nijatva.music.player.library.rememberMusicLibrary
 import com.nijatva.music.player.model.Track
+import com.nijatva.music.player.player.ExternalOpen
 import com.nijatva.music.player.player.Playback
 import com.nijatva.music.player.player.rememberPlayback
 import com.nijatva.music.player.ui.Accent
@@ -108,6 +109,13 @@ fun App() {
             delay(500)
             playback.tick()
         }
+    }
+
+    // A file opened from another app ("open with Music", or the default-player picker).
+    LaunchedEffect(playback, ExternalOpen.request) {
+        val incoming = ExternalOpen.request ?: return@LaunchedEffect
+        playback.playNow(listOf(incoming), 0)
+        ExternalOpen.clear()
     }
 
     val tracks = remember(allTracks, hideShortSongs) {

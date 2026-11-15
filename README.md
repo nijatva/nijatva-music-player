@@ -34,6 +34,8 @@ App name: **Music** · Android package: `com.nijatva.music.player`
 - **Equalizer** — five presets (Flat, Bass, Vocal, Treble, Warm). Android applies them to the
   audio session through `android.media.audiofx.Equalizer`; the web player uses Web Audio
   biquad filters. The desktop build ignores them.
+- **System default player** — the app registers for `audio/*` VIEW intents, so Android lists it
+  under Settings → Default apps → Music and "open with" on an audio file starts playback here.
 - **Radio** — paste a direct stream URL and play it. Nijatva ships no station list and
   contacts no directory service.
 
