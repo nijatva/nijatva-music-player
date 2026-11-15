@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#000000">
+<link rel="icon" href="music.svg" type="image/svg+xml">
 <title>Music — a Nijatva app</title>
 <style>
   :root {
@@ -23,10 +24,7 @@
   }
   .wrap { max-width: 760px; margin: 0 auto; padding: 24px 20px 64px; }
   header { display: flex; align-items: center; gap: 10px; padding: 8px 0 26px; }
-  .mark {
-    width: 34px; height: 34px; border-radius: 10px; background: var(--accent);
-    color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 18px;
-  }
+  .mark { width: 34px; height: 34px; border-radius: 10px; display: block; }
   header .name { font-size: 20px; font-weight: 650; }
   header .by { color: var(--muted); font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; }
   h1 { font-size: 34px; line-height: 1.15; margin: 8px 0 12px; letter-spacing: -.6px; }
@@ -71,7 +69,7 @@
 <div class="wrap">
 
   <header>
-    <div class="mark">N</div>
+    <img class="mark" src="music.svg" alt="">
     <div>
       <div class="name">Music</div>
       <div class="by">a Nijatva app</div>

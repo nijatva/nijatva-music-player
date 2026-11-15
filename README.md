@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/music.svg" width="96" alt="Music icon"></p>
+
 # Nijatva Music — audio player
 
 An offline music player for the audio files already on your device. One Compose
