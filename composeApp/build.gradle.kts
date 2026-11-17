@@ -16,6 +16,11 @@ kotlin {
     jvm("desktop")
 
     sourceSets {
+        androidMain {
+            dependencies {
+                implementation(files("libs/nijatva-signature-1.0.0.aar"))
+            }
+        }
         val commonMain by getting {
             dependencies {
                 implementation(compose.runtime)
