@@ -613,6 +613,7 @@
       if (action === 'sleep') openSheet('#sleepSheet');
       if (action === 'eq') { ensureGraph(); openSheet('#eqSheet'); }
       if (action === 'appearance') openSheet('#appearanceSheet');
+      if (action === 'install') promptInstall();
     };
 
     $$('.tabs .tab').forEach((tab) => {
@@ -827,11 +828,49 @@
     }, 1000);
   }
 
+  /* ---------------- install as an app ---------------- */
+
+  let installEvent = null;
+
+  function promptInstall() {
+    if (installEvent) {
+      installEvent.prompt();
+      installEvent.userChoice.then((choice) => {
+        if (choice.outcome === 'accepted') {
+          installEvent = null;
+          $('#installBtn').hidden = true;
+        }
+      }).catch(() => {});
+      return;
+    }
+    toast('In Chrome: menu ⋮ → “Add to Home screen”');
+  }
+
+  function wireInstall() {
+    window.addEventListener('beforeinstallprompt', (event) => {
+      event.preventDefault();
+      installEvent = event;
+      $('#installBtn').hidden = false;
+    });
+    window.addEventListener('appinstalled', () => {
+      installEvent = null;
+      $('#installBtn').hidden = true;
+      toast('Installed — open Music from your home screen');
+    });
+    $('#installBtn').onclick = promptInstall;
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      });
+    }
+  }
+
   /* ---------------- boot ---------------- */
 
   buildBands();
   loadPrefs();
   wire();
+  wireInstall();
   paintNowPlaying();
   render();
 })();

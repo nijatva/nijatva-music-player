@@ -223,6 +223,10 @@ kbd {
   padding: 7px 13px; border-radius: 999px; background: var(--surface-2);
   font-size: 12.5px; color: var(--muted);
 }
+.install-chip {
+  align-self: center; margin-right: 4px;
+  background: var(--accent); color: var(--accent-ink); font-weight: 600;
+}
 .chip.is-on { background: var(--accent); color: var(--accent-ink); }
 
 /* ---------- mini player ---------- */

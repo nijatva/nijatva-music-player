@@ -10,7 +10,7 @@ install.
 
 App name: **Music** · Android package: `com.nijatva.music.player`
 
-**[Download the APK](https://github.com/nijatva/nijatva-music-player/releases/latest)** · **[Web player](https://nijatva.github.io/nijatva-music-player/player/)**
+**[Download the APK](https://github.com/vasudev-work/nijatva-music-player/releases/latest)** · **[Web player](https://vasudev-work.github.io/nijatva-music-player/player/)**
 
 | Platform | How it plays | How it finds music | Artifact |
 |---|---|---|---|
@@ -99,6 +99,9 @@ and the library lists your files; playback is a no-op rather than a crash.
 ### Web
 
 `web/` is a static page — open `index.html` in a browser or host the folder anywhere.
+It is also an installable web app: Chrome and Safari offer **Add to Home screen**, and a
+service worker (`sw.js`) caches the shell so it opens offline as a standalone window.
+Your audio files are never cached or uploaded — only the app itself is.
 
 - Choose files, choose a folder, or drop files (and whole folders) on the page.
 - Reads ID3v2 titles, artists, albums and embedded cover art locally.
