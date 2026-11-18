@@ -1,138 +1,449 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="black" data-accent="saffron">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#000000">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nijatva Music - offline player for Android, desktop and the browser</title>
+<meta name="description" content="A small offline music player for the files already on your device. Android, Windows, macOS, Linux and a web player that needs no install. No accounts, no ads, no analytics, no Google Play Services.">
+<meta name="theme-color" content="#0b0b0d">
 <link rel="icon" href="music.svg" type="image/svg+xml">
-<title>Music — a Nijatva app</title>
+<meta property="og:type" content="website">
+<meta property="og:title" content="Nijatva Music - your music, played offline">
+<meta property="og:description" content="Android, desktop and a browser player that needs no install. No accounts, no ads, no analytics.">
 <style>
-  :root {
-    --accent: #d97706;
-    --bg: #000;
-    --surface: #0f0f0f;
-    --surface-2: #191919;
-    --text: #f5f5f5;
-    --muted: #a1a1aa;
-    --line: #262626;
+  :root{
+    --accent:#f59e0b; --accent-ink:#1a1204; --accent-soft:rgba(245,158,11,.14);
+    --bg:#0b0b0d; --surf:#141417; --surf2:#1c1c21; --line:#2a2a31;
+    --fg:#f4f4f5; --mut:#a1a1aa; --radius:22px;
+    --ease:cubic-bezier(.2,.8,.2,1);
   }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; background: var(--bg); color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    line-height: 1.55;
+  html[data-theme="light"]{
+    --accent:#b45309; --accent-ink:#fff; --accent-soft:rgba(180,83,9,.10);
+    --bg:#fbfbfc; --surf:#fff; --surf2:#f2f2f5; --line:#e4e4ea;
+    --fg:#18181b; --mut:#5f5f6a;
   }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 24px 20px 64px; }
-  header { display: flex; align-items: center; gap: 10px; padding: 8px 0 26px; }
-  .mark { width: 34px; height: 34px; border-radius: 10px; display: block; }
-  header .name { font-size: 20px; font-weight: 650; }
-  header .by { color: var(--muted); font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; }
-  h1 { font-size: 34px; line-height: 1.15; margin: 8px 0 12px; letter-spacing: -.6px; }
-  h1 span { color: var(--accent); }
-  p.lead { color: var(--muted); font-size: 16px; margin: 0 0 24px; max-width: 60ch; }
-  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 34px; }
-  .btn {
-    display: inline-block; text-decoration: none; padding: 12px 20px; border-radius: 999px;
-    background: var(--surface-2); color: var(--text); font-size: 14px; font-weight: 550;
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--fg);
+    font:15.5px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans",Arial,sans-serif;
+    -webkit-text-size-adjust:100%;
   }
-  .btn.primary { background: var(--accent); color: #fff; }
-  .card {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 18px;
-    padding: 20px; margin-bottom: 16px;
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:880px;margin:0 auto;padding:0 20px 72px}
+  .skip{position:absolute;left:-9999px}
+  .skip:focus{left:12px;top:12px;z-index:100;background:var(--accent);color:var(--accent-ink);
+              padding:10px 16px;border-radius:999px}
+
+  /* ---------- header ---------- */
+  .hdr{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);
+       backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .hdr-in{max-width:880px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:11px}
+  .mark{width:38px;height:38px;border-radius:11px;flex:none;display:block;background:var(--surf2)}
+  .who{flex:1;min-width:0}
+  .who .nm{font-size:16px;font-weight:650;letter-spacing:-.2px;line-height:1.2}
+  .who .by{font-size:10.5px;letter-spacing:1.3px;text-transform:uppercase;color:var(--mut)}
+  .round{width:40px;height:40px;border-radius:50%;border:0;background:transparent;color:var(--fg);
+         display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;
+         font-size:13px;font-weight:700;letter-spacing:.4px;transition:background .16s}
+  .round:hover,.round:active{background:var(--surf2)}
+  .pill{display:inline-flex;align-items:center;gap:7px;background:var(--accent);color:var(--accent-ink);
+        border:0;border-radius:999px;padding:10px 16px;font-size:13.5px;font-weight:650;
+        white-space:nowrap;transition:transform .16s var(--ease)}
+  .pill:active{transform:scale(.96)}
+
+  /* ---------- hero ---------- */
+  .hero{margin:22px 0 26px;border-radius:28px;padding:30px 26px;position:relative;overflow:hidden;
+        background:linear-gradient(135deg,#3b1d05 0%,#5c2c06 45%,#1c1c21 100%);
+        border:1px solid var(--line);color:#fff}
+  html[data-theme="light"] .hero{background:linear-gradient(135deg,#fde8c8 0%,#fbd7a5 45%,#fff 100%);color:#18181b;
+        border-color:#f0d5ab}
+  .hero .badge{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:750;
+        letter-spacing:.7px;text-transform:uppercase;border-radius:999px;padding:6px 13px;
+        background:rgba(255,255,255,.14);color:#fff}
+  html[data-theme="light"] .hero .badge{background:rgba(24,24,27,.08);color:#18181b}
+  .hero h1{margin:16px 0 10px;font-size:36px;line-height:1.12;letter-spacing:-.9px;max-width:20ch}
+  .hero h1 em{font-style:normal;color:var(--accent)}
+  .hero p{margin:0 0 22px;font-size:15.5px;line-height:1.6;max-width:54ch;opacity:.92}
+  .cta{display:flex;gap:10px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:13px 21px;
+       font-size:14.5px;font-weight:650;border:1px solid transparent;transition:transform .16s var(--ease)}
+  .btn:active{transform:scale(.97)}
+  .btn.primary{background:var(--accent);color:var(--accent-ink)}
+  .btn.ghost{background:rgba(255,255,255,.10);color:#fff;border-color:rgba(255,255,255,.22)}
+  html[data-theme="light"] .btn.ghost{background:#fff;color:#18181b;border-color:#e4c9a4}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
+  .chip{font-size:11.5px;font-weight:600;letter-spacing:.3px;border-radius:999px;padding:6px 12px;
+        background:rgba(255,255,255,.10);color:#fff;border:1px solid rgba(255,255,255,.16)}
+  html[data-theme="light"] .chip{background:#fff;color:#3f3f46;border-color:#ecd9bd}
+
+  /* ---------- sections ---------- */
+  h2.sec{font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);
+         margin:34px 0 12px;font-weight:750}
+  .card{background:var(--surf);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  .plat h3{margin:0 0 4px;font-size:15.5px;letter-spacing:-.2px}
+  .plat .tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+             color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:3px 9px;margin-bottom:10px}
+  .plat p{margin:0;color:var(--mut);font-size:13.5px;line-height:1.55}
+  .plat .kv{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);color:var(--mut);font-size:12.5px}
+  code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+  code{background:var(--surf2);padding:1.5px 6px;border-radius:6px;color:var(--fg)}
+
+  .feat{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+  .feat .it{display:flex;gap:12px;align-items:flex-start}
+  .feat .ic{width:34px;height:34px;border-radius:11px;flex:none;display:grid;place-items:center;
+            background:var(--accent-soft);color:var(--accent)}
+  .feat .ic svg{width:18px;height:18px}
+  .feat b{display:block;font-size:14px;font-weight:650;letter-spacing:-.1px}
+  .feat span{color:var(--mut);font-size:13px;line-height:1.5}
+
+  ol.steps{margin:0;padding:0;list-style:none;counter-reset:s}
+  ol.steps li{position:relative;padding:0 0 16px 42px;counter-increment:s}
+  ol.steps li:last-child{padding-bottom:0}
+  ol.steps li::before{content:counter(s);position:absolute;left:0;top:-1px;width:27px;height:27px;
+    border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:750;
+    display:grid;place-items:center}
+  ol.steps b{display:block;font-size:14px}
+  ol.steps span{color:var(--mut);font-size:13.5px}
+
+  .note{margin-top:14px;padding:12px 14px;border-radius:14px;font-size:12.5px;line-height:1.55;
+        background:var(--surf2);color:var(--mut);border:1px solid var(--line)}
+  .note b{color:var(--fg)}
+
+  .codebox{position:relative}
+  pre{margin:0;background:var(--surf2);border:1px solid var(--line);border-radius:14px;
+      padding:16px 16px;overflow-x:auto;font-size:12.5px;line-height:1.7;color:var(--fg)}
+  pre .c{color:var(--mut)}
+  .copybtn{position:absolute;top:10px;right:10px;background:var(--surf);color:var(--mut);
+           border:1px solid var(--line);border-radius:9px;padding:6px 11px;font-size:11.5px;
+           font-weight:650;cursor:pointer;font-family:inherit}
+  .copybtn:hover{color:var(--fg)}
+
+  .dev{display:flex;gap:15px;align-items:center;flex-wrap:wrap}
+  .av{width:56px;height:56px;border-radius:17px;flex:none;display:grid;place-items:center;
+      background:linear-gradient(140deg,var(--accent),#7a4405);color:#fff;font-weight:750;font-size:19px}
+  .dev .d1{font-size:15.5px;font-weight:650}
+  .dev .d2{color:var(--mut);font-size:13px}
+  .india{margin-top:20px;text-align:center;color:#fff;font-weight:750;font-size:12px;
+         letter-spacing:1.7px;padding:13px;border-radius:999px;
+         background:linear-gradient(90deg,#ff9933,#ffffff 50%,#138808)}
+  .india span{background:rgba(0,0,0,.55);padding:3px 12px;border-radius:999px}
+
+  footer{margin-top:36px;padding-top:20px;border-top:1px solid var(--line);
+         color:var(--mut);font-size:12.5px;display:flex;gap:8px 18px;flex-wrap:wrap;
+         justify-content:space-between}
+  :focus-visible{outline:2.5px solid var(--accent);outline-offset:2px;border-radius:8px}
+  @media (max-width:520px){
+    .hero{padding:24px 20px;border-radius:24px}
+    .hero h1{font-size:29px}
+    .who .by{display:none}
+    .hdr .pill span{display:none}
   }
-  .card h2 { font-size: 12px; letter-spacing: 1.3px; text-transform: uppercase; color: var(--accent); margin: 0 0 14px; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  td { padding: 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
-  tr:last-child td { border-bottom: 0; }
-  td:first-child { color: var(--muted); width: 38%; }
-  code { background: var(--surface-2); padding: 1px 6px; border-radius: 6px; font-size: 13px; }
-  pre { background: var(--surface-2); padding: 14px; border-radius: 12px; overflow-x: auto; font-size: 13px; }
-  ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 14.5px; }
-  li { margin-bottom: 7px; }
-  .dev { display: flex; gap: 14px; align-items: center; }
-  .dev .av {
-    width: 54px; height: 54px; border-radius: 16px; display: grid; place-items: center;
-    background: linear-gradient(140deg, var(--accent), #7a4405); color: #fff; font-weight: 700; font-size: 19px;
-  }
-  .dev .who { font-size: 15px; font-weight: 600; }
-  .dev .sub { color: var(--muted); font-size: 13px; }
-  .india {
-    margin-top: 22px; text-align: center; color: #fff; font-weight: 700;
-    font-size: 12.5px; letter-spacing: 1.6px; padding: 13px; border-radius: 999px;
-    background: linear-gradient(90deg, #ff9933, #138808);
-  }
-  footer { color: var(--muted); font-size: 12.5px; text-align: center; margin-top: 26px; }
-  a { color: var(--accent); }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}
+    html{scroll-behavior:auto}}
 </style>
 </head>
 <body>
-<div class="wrap">
+<a class="skip" href="#main" data-i18n="skip">Skip to content</a>
 
-  <header>
+<div class="hdr">
+  <div class="hdr-in">
     <img class="mark" src="music.svg" alt="">
-    <div>
-      <div class="name">Music</div>
-      <div class="by">a Nijatva app</div>
+    <div class="who">
+      <div class="nm">Nijatva Music</div>
+      <div class="by" data-i18n="byline">a Nijatva app</div>
     </div>
-  </header>
+    <button class="round" id="lang" aria-label="Language" title="Language">हिं</button>
+    <button class="round" id="theme" aria-label="Theme" title="Theme">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+           stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/>
+        <path d="M12 2.6v2.2M12 19.2v2.2M4.2 12H2M22 12h-2.2M6.3 6.3 4.8 4.8M19.2 19.2l-1.5-1.5M17.7 6.3l1.5-1.5M4.8 19.2l1.5-1.5"/></svg>
+    </button>
+    <a class="pill" href="player/">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M8 5.5v13l11-6.5z"/></svg><span data-i18n="openPlayer">Open player</span>
+    </a>
+  </div>
+</div>
 
-  <h1>Your music, <span>played offline</span>.</h1>
-  <p class="lead">
-    A small audio player for the files already on your device. One Compose Multiplatform
-    codebase for Android and desktop, plus a web player that runs in the browser tab with
-    no install at all. No accounts, no ads, no analytics, no Google Play Services.
-  </p>
+<main class="wrap" id="main">
 
-  <div class="actions">
-    <a class="btn primary" href="player/">Open the web player</a>
-    <a class="btn" href="player/">Install it on your phone</a>
-    <a class="btn" href="https://github.com/vasudev-work/nijatva-music-player">Source on GitHub</a>
-    <a class="btn" href="https://github.com/vasudev-work/nijatva-music-player/actions">Builds</a>
+  <section class="hero">
+    <span class="badge" data-i18n="badge">Offline first · v1.1.2</span>
+    <h1><span data-i18n="h1a">Your music,</span> <em data-i18n="h1b">played offline</em>.</h1>
+    <p data-i18n="lead">A small player for the audio files already on your device. One Compose
+      Multiplatform codebase for Android and desktop, plus a web player that runs in a browser tab
+      with nothing to install.</p>
+    <div class="cta">
+      <a class="btn primary" id="apk" href="https://github.com/vasudev-work/nijatva-music-player/releases/latest">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3v12"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M4.5 19.5h15"/></svg>
+        <span data-i18n="getApk">Download for Android</span>
+      </a>
+      <a class="btn ghost" href="player/">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5"/>
+          <path d="M3 9h18"/></svg>
+        <span data-i18n="openWeb">Open the web player</span>
+      </a>
+      <a class="btn ghost" href="https://github.com/vasudev-work/nijatva-music-player">
+        <span data-i18n="source">Source</span>
+      </a>
+    </div>
+    <div class="chips">
+      <span class="chip" data-i18n="c1">No accounts</span>
+      <span class="chip" data-i18n="c2">No ads</span>
+      <span class="chip" data-i18n="c3">No analytics</span>
+      <span class="chip" data-i18n="c4">No Google Play Services</span>
+      <span class="chip">Apache 2.0</span>
+    </div>
+  </section>
+
+  <h2 class="sec" data-i18n="secPlatforms">Platforms</h2>
+  <div class="grid">
+    <div class="card plat">
+      <span class="tag">Android</span>
+      <h3 data-i18n="p1h">Phone and tablet</h3>
+      <p data-i18n="p1p">Media3 (ExoPlayer) playback over the system MediaStore library, with a
+        foreground service so playback survives a locked screen.</p>
+      <div class="kv">minSdk 24 · targetSdk 35 · <code>com.nijatva.music.player</code></div>
+    </div>
+    <div class="card plat">
+      <span class="tag">Desktop</span>
+      <h3 data-i18n="p2h">Windows, macOS, Linux</h3>
+      <p data-i18n="p2p">libVLC through vlcj, reading the music in your Music and Downloads folders.</p>
+      <div class="kv">.deb · .dmg · .msi, built by CI</div>
+    </div>
+    <div class="card plat">
+      <span class="tag">Web</span>
+      <h3 data-i18n="p3h">No install at all</h3>
+      <p data-i18n="p3p">HTML5 audio, ID3 tags and cover art read in the tab, and a five band
+        equaliser built on Web Audio. Your files never leave the browser.</p>
+      <div class="kv" data-i18n="p3kv">Works from a plain folder too</div>
+    </div>
+    <div class="card plat">
+      <span class="tag">PWA</span>
+      <h3 data-i18n="p4h">Add to home screen</h3>
+      <p data-i18n="p4p">The web player is installable: a manifest and a service worker cache the
+        shell, so it opens offline as a standalone app.</p>
+      <div class="kv" data-i18n="p4kv">Offline shell, no store involved</div>
+    </div>
   </div>
 
+  <h2 class="sec" data-i18n="secDoes">What it does</h2>
   <div class="card">
-    <h2>Platforms</h2>
-    <table>
-      <tr><td>Android</td><td>Media3 (ExoPlayer) + MediaStore library · package <code>com.nijatva.music.player</code></td></tr>
-      <tr><td>Windows · macOS · Linux</td><td>libVLC via vlcj, reading <code>~/Music</code> and <code>~/Downloads</code></td></tr>
-      <tr><td>Web</td><td>HTML5 audio, tags read in the tab, Web Audio equalizer — no build step</td></tr>
-      <tr><td>Web app</td><td>Installable: add it to your home screen and it opens offline as a standalone app</td></tr>
-    </table>
+    <div class="feat">
+      <div class="it"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></span>
+        <div><b data-i18n="f1t">Songs, albums, artists</b><span data-i18n="f1s">Folders and genres too, all built from what is actually on the device.</span></div></div>
+      <div class="it"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h10M4 12h7M4 17h10"/><path d="M18 9v6M15 12h6"/></svg></span>
+        <div><b data-i18n="f2t">A live queue</b><span data-i18n="f2s">Shuffle, repeat one, repeat the queue, and a sleep timer that stops when you do.</span></div></div>
+      <div class="it"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="3.4"/></svg></span>
+        <div><b data-i18n="f3t">Four themes, three accents</b><span data-i18n="f3s">System, Dark, Light and Black, with Green, Saffron or Indigo.</span></div></div>
+      <div class="it"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 4v16M8 8v8M16 8v8M4 11v2M20 11v2"/></svg></span>
+        <div><b data-i18n="f4t">A real equaliser</b><span data-i18n="f4s">Flat, Bass, Vocal, Treble and Warm, from five filters across the band.</span></div></div>
+      <div class="it"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M3.5 9h17"/><path d="M8 4.5v4.5"/></svg></span>
+        <div><b data-i18n="f5t">Tags read locally</b><span data-i18n="f5s">ID3 titles, artists, albums and cover art, parsed on the device and never uploaded.</span></div></div>
+      <div class="it"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 20V10M12 20V4M18 20v-7"/></svg></span>
+        <div><b data-i18n="f6t">Lock screen controls</b><span data-i18n="f6s">Media Session in the browser, a media notification on Android.</span></div></div>
+    </div>
   </div>
 
+  <h2 class="sec" data-i18n="secInstall">Install on Android</h2>
   <div class="card">
-    <h2>What it does</h2>
-    <ul>
-      <li>Songs, albums, artists, folders, genres and a live queue, built from what is on the device.</li>
-      <li>Shuffle, repeat one or repeat queue, a sleep timer and a favourite list.</li>
-      <li>Four themes (System, Dark, Light, Black) and three accents (Green, Saffron, Indigo).</li>
-      <li>ID3 titles, artists, albums and cover art read locally — never uploaded.</li>
-      <li>Equalizer presets: Flat, Bass, Vocal, Treble, Warm.</li>
-    </ul>
+    <ol class="steps">
+      <li><b data-i18n="s1t">Download the APK</b><span data-i18n="s1s">From the latest release. It is <code>nijatva-music-1.1.2-debug.apk</code>.</span></li>
+      <li><b data-i18n="s2t">Allow the install</b><span data-i18n="s2s">Android asks once whether this browser may install apps. Say yes, then open the file.</span></li>
+      <li><b data-i18n="s3t">Grant audio access</b><span data-i18n="s3s">The player reads your media library; without that permission the list stays empty.</span></li>
+    </ol>
+    <div class="note"><b data-i18n="noteT">This build is debug-signed.</b>
+      <span data-i18n="noteB">It is not on Google Play and not signed for release, so Android will warn
+      you about an unknown source. That is expected for a sideloaded build from CI.</span></div>
   </div>
 
-  <div class="card">
-    <h2>Build</h2>
-    <pre>./gradlew :composeApp:assembleDebug   # Android APK
-./gradlew :composeApp:run             # desktop app</pre>
-    <p class="sub" style="color: var(--muted); font-size: 13.5px; margin: 12px 0 0;">
-      Desktop playback needs VLC installed. The web player is <code>web/index.html</code> — open it in any browser.
-    </p>
+  <h2 class="sec" data-i18n="secBuild">Build it yourself</h2>
+  <div class="card codebox">
+    <button class="copybtn" id="copybuild" data-i18n="copy">Copy</button>
+    <pre id="buildcode">./gradlew :composeApp:assembleDebug   <span class="c"># Android APK</span>
+./gradlew :composeApp:run             <span class="c"># desktop app</span>
+
+<span class="c"># the web player has no build step at all:</span>
+open web/index.html</pre>
+    <div class="note" data-i18n="buildNote">Desktop playback needs VLC installed. The web player is
+      <code>web/index.html</code> — any browser opens it, and the published copy lives in
+      <code>docs/player/</code>.</div>
   </div>
 
+  <h2 class="sec" data-i18n="secDev">Developer</h2>
   <div class="card">
-    <h2>Developer</h2>
     <div class="dev">
       <div class="av">VD</div>
       <div>
-        <div class="who">Vasudev Dangaya</div>
-        <div class="sub">Independent developer · India · <a href="https://github.com/vasudev-work">github.com/vasudev-work</a></div>
+        <div class="d1">Vasudev Dangaya</div>
+        <div class="d2" data-i18n="devSub">Independent developer · India ·
+          <a href="https://github.com/vasudev-work">github.com/vasudev-work</a></div>
       </div>
     </div>
-    <div class="india">MAKE IN INDIA</div>
+    <div class="india"><span>MAKE IN INDIA</span></div>
   </div>
 
-  <footer>Designed &amp; developed by Vasudev Dangaya · Apache License 2.0</footer>
-</div>
+  <footer>
+    <span data-i18n="footL">Designed and developed by Vasudev Dangaya · Apache License 2.0</span>
+    <span><a href="https://github.com/vasudev-work/nijatva-music-player/actions" data-i18n="footBuilds">Builds</a>
+      · <a href="https://github.com/vasudev-work/nijatva-music-player" data-i18n="footSource">Source</a></span>
+  </footer>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var LANG = 'en';
+  var T = {
+    en: {
+      skip: 'Skip to content', byline: 'a Nijatva app', openPlayer: 'Open player',
+      badge: 'Offline first · v1.1.2',
+      h1a: 'Your music,', h1b: 'played offline',
+      lead: 'A small player for the audio files already on your device. One Compose Multiplatform codebase for Android and desktop, plus a web player that runs in a browser tab with nothing to install.',
+      getApk: 'Download for Android', openWeb: 'Open the web player', source: 'Source',
+      c1: 'No accounts', c2: 'No ads', c3: 'No analytics', c4: 'No Google Play Services',
+      secPlatforms: 'Platforms', secDoes: 'What it does', secInstall: 'Install on Android',
+      secBuild: 'Build it yourself', secDev: 'Developer',
+      p1h: 'Phone and tablet',
+      p1p: 'Media3 (ExoPlayer) playback over the system MediaStore library, with a foreground service so playback survives a locked screen.',
+      p2h: 'Windows, macOS, Linux',
+      p2p: 'libVLC through vlcj, reading the music in your Music and Downloads folders.',
+      p3h: 'No install at all',
+      p3p: 'HTML5 audio, ID3 tags and cover art read in the tab, and a five band equaliser built on Web Audio. Your files never leave the browser.',
+      p3kv: 'Works from a plain folder too',
+      p4h: 'Add to home screen',
+      p4p: 'The web player is installable: a manifest and a service worker cache the shell, so it opens offline as a standalone app.',
+      p4kv: 'Offline shell, no store involved',
+      f1t: 'Songs, albums, artists', f1s: 'Folders and genres too, all built from what is actually on the device.',
+      f2t: 'A live queue', f2s: 'Shuffle, repeat one, repeat the queue, and a sleep timer that stops when you do.',
+      f3t: 'Four themes, three accents', f3s: 'System, Dark, Light and Black, with Green, Saffron or Indigo.',
+      f4t: 'A real equaliser', f4s: 'Flat, Bass, Vocal, Treble and Warm, from five filters across the band.',
+      f5t: 'Tags read locally', f5s: 'ID3 titles, artists, albums and cover art, parsed on the device and never uploaded.',
+      f6t: 'Lock screen controls', f6s: 'Media Session in the browser, a media notification on Android.',
+      s1t: 'Download the APK', s1s: 'From the latest release. It is nijatva-music-1.1.2-debug.apk.',
+      s2t: 'Allow the install', s2s: 'Android asks once whether this browser may install apps. Say yes, then open the file.',
+      s3t: 'Grant audio access', s3s: 'The player reads your media library; without that permission the list stays empty.',
+      noteT: 'This build is debug-signed.',
+      noteB: 'It is not on Google Play and not signed for release, so Android will warn you about an unknown source. That is expected for a sideloaded build from CI.',
+      copy: 'Copy', copied: 'Copied',
+      buildNote: 'Desktop playback needs VLC installed. The web player is web/index.html — any browser opens it, and the published copy lives in docs/player/.',
+      devSub: 'Independent developer · India · github.com/vasudev-work',
+      footL: 'Designed and developed by Vasudev Dangaya · Apache License 2.0',
+      footBuilds: 'Builds', footSource: 'Source',
+      language: 'Language', theme: 'Theme'
+    },
+    hi: {
+      skip: 'सामग्री पर जाएँ', byline: 'एक निजत्व ऐप', openPlayer: 'प्लेयर खोलें',
+      badge: 'ऑफ़लाइन पहले · v1.1.2',
+      h1a: 'आपका संगीत,', h1b: 'बिना इंटरनेट चले',
+      lead: 'आपके डिवाइस में पहले से मौजूद ऑडियो फ़ाइलों के लिए एक छोटा प्लेयर। Android और desktop के लिए एक ही Compose Multiplatform कोडबेस, और साथ में ब्राउज़र टैब में चलने वाला वेब प्लेयर — कुछ इंस्टॉल करने की ज़रूरत नहीं।',
+      getApk: 'Android के लिए डाउनलोड', openWeb: 'वेब प्लेयर खोलें', source: 'सोर्स',
+      c1: 'कोई खाता नहीं', c2: 'कोई विज्ञापन नहीं', c3: 'कोई एनालिटिक्स नहीं', c4: 'Google Play Services नहीं',
+      secPlatforms: 'प्लेटफ़ॉर्म', secDoes: 'यह क्या करता है', secInstall: 'Android पर इंस्टॉल',
+      secBuild: 'खुद बनाएँ', secDev: 'डेवलपर',
+      p1h: 'फ़ोन और टैबलेट',
+      p1p: 'सिस्टम MediaStore लाइब्रेरी पर Media3 (ExoPlayer) से प्लेबैक, और foreground service, ताकि स्क्रीन बंद होने पर भी संगीत चलता रहे।',
+      p2h: 'Windows, macOS, Linux',
+      p2p: 'vlcj के ज़रिए libVLC, आपके Music और Downloads फ़ोल्डर से संगीत पढ़ता है।',
+      p3h: 'इंस्टॉल की ज़रूरत नहीं',
+      p3p: 'HTML5 ऑडियो, टैब में ही पढ़े जाने वाले ID3 टैग और कवर आर्ट, और Web Audio पर बना पाँच-बैंड इक्वलाइज़र। आपकी फ़ाइलें ब्राउज़र से बाहर नहीं जातीं।',
+      p3kv: 'सीधे फ़ोल्डर से भी चलता है',
+      p4h: 'होम स्क्रीन पर जोड़ें',
+      p4p: 'वेब प्लेयर इंस्टॉल हो सकता है: manifest और service worker शेल को कैश करते हैं, इसलिए यह ऑफ़लाइन एक अलग ऐप की तरह खुलता है।',
+      p4kv: 'ऑफ़लाइन शेल, कोई स्टोर नहीं',
+      f1t: 'गाने, एल्बम, कलाकार', f1s: 'फ़ोल्डर और विधाएँ भी — सब कुछ डिवाइस में जो असल में है उसी से।',
+      f2t: 'लाइव क्यू', f2s: 'शफ़ल, एक गाना दोहराएँ, पूरी क्यू दोहराएँ, और स्लीप टाइमर।',
+      f3t: 'चार थीम, तीन रंग', f3s: 'System, Dark, Light और Black, साथ में Green, Saffron या Indigo।',
+      f4t: 'असली इक्वलाइज़र', f4s: 'Flat, Bass, Vocal, Treble और Warm, पूरे बैंड पर पाँच फ़िल्टर से।',
+      f5t: 'टैग डिवाइस पर ही', f5s: 'ID3 शीर्षक, कलाकार, एल्बम और कवर आर्ट डिवाइस पर पढ़े जाते हैं, कहीं अपलोड नहीं होते।',
+      f6t: 'लॉक स्क्रीन कंट्रोल', f6s: 'ब्राउज़र में Media Session, Android पर मीडिया नोटिफ़िकेशन।',
+      s1t: 'APK डाउनलोड करें', s1s: 'नवीनतम रिलीज़ से। फ़ाइल का नाम nijatva-music-1.1.2-debug.apk है।',
+      s2t: 'इंस्टॉल की अनुमति दें', s2s: 'Android एक बार पूछता है कि यह ब्राउज़र ऐप इंस्टॉल कर सकता है या नहीं। हाँ कहें, फिर फ़ाइल खोलें।',
+      s3t: 'ऑडियो की अनुमति दें', s3s: 'प्लेयर आपकी मीडिया लाइब्रेरी पढ़ता है; इस अनुमति के बिना सूची खाली रहेगी।',
+      noteT: 'यह बिल्ड debug-signed है।',
+      noteB: 'यह Google Play पर नहीं है और release के लिए signed नहीं है, इसलिए Android अज्ञात स्रोत की चेतावनी देगा। CI से साइडलोड किए बिल्ड के लिए यह सामान्य है।',
+      copy: 'कॉपी', copied: 'कॉपी हुआ',
+      buildNote: 'desktop प्लेबैक के लिए VLC इंस्टॉल होना चाहिए। वेब प्लेयर web/index.html है — कोई भी ब्राउज़र इसे खोल लेता है, और प्रकाशित प्रति docs/player/ में रहती है।',
+      devSub: 'स्वतंत्र डेवलपर · भारत · github.com/vasudev-work',
+      footL: 'डिज़ाइन और विकास: Vasudev Dangaya · Apache License 2.0',
+      footBuilds: 'बिल्ड्स', footSource: 'सोर्स',
+      language: 'भाषा', theme: 'थीम'
+    }
+  };
+  function t(k) { return (T[LANG] && T[LANG][k]) || T.en[k] || k; }
+
+  var root = document.documentElement;
+  var langBtn = document.getElementById('lang');
+  var themeBtn = document.getElementById('theme');
+
+  function paintLang() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-i18n]'), function (el) {
+      var k = el.getAttribute('data-i18n');
+      // these three carry markup, so they are set as HTML from the same strings
+      if (k === 's1s' || k === 'buildNote' || k === 'devSub') { el.innerHTML = t(k); return; }
+      el.textContent = t(k);
+    });
+    langBtn.textContent = LANG === 'en' ? 'हिं' : 'EN';
+    langBtn.setAttribute('aria-label', t('language'));
+    langBtn.setAttribute('title', t('language'));
+    root.setAttribute('lang', LANG === 'hi' ? 'hi' : 'en');
+  }
+
+  function paintTheme() {
+    root.setAttribute('data-theme', root.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
+    themeBtn.setAttribute('aria-label', t('theme'));
+    themeBtn.setAttribute('title', t('theme'));
+  }
+
+  try {
+    var savedLang = localStorage.getItem('nijatva.music.lang');
+    if (savedLang && T[savedLang]) LANG = savedLang;
+    var savedTheme = localStorage.getItem('nijatva.music.theme');
+    if (savedTheme === 'light' || savedTheme === 'dark') root.setAttribute('data-theme', savedTheme);
+    else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+      root.setAttribute('data-theme', 'light');
+    }
+  } catch (e) { }
+
+  langBtn.addEventListener('click', function () {
+    LANG = LANG === 'en' ? 'hi' : 'en';
+    try { localStorage.setItem('nijatva.music.lang', LANG); } catch (e) { }
+    paintLang();
+  });
+
+  themeBtn.addEventListener('click', function () {
+    root.setAttribute('data-theme', root.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+    try { localStorage.setItem('nijatva.music.theme', root.getAttribute('data-theme')); } catch (e) { }
+  });
+
+  var cb = document.getElementById('copybuild');
+  cb.addEventListener('click', function () {
+    var text = document.getElementById('buildcode').innerText;
+    function done(ok) {
+      var old = t('copy');
+      cb.textContent = ok ? t('copied') : old;
+      setTimeout(function () { cb.textContent = old; }, 1400);
+    }
+    try {
+      if (navigator.clipboard) navigator.clipboard.writeText(text).then(function () { done(true); },
+                                                                        function () { done(false); });
+      else {
+        var ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta); done(true);
+      }
+    } catch (e) { done(false); }
+  });
+
+  paintTheme();
+  paintLang();
+})();
+</script>
 </body>
 </html>
