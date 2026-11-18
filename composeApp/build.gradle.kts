@@ -18,7 +18,7 @@ kotlin {
     sourceSets {
         androidMain {
             dependencies {
-                implementation(files("libs/nijatva-signature-1.0.0.aar"))
+                implementation("com.nijatva:signature:1.0.0")
             }
         }
         val commonMain by getting {
