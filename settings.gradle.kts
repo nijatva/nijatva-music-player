@@ -4,6 +4,14 @@ pluginManagement {
     repositories {
         google()
         mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
         // nijatva-core's signature kit, published by publish.yml on a release tag.
         maven {
             name = "NijatvaGitHubPackages"
@@ -13,14 +21,6 @@ pluginManagement {
                 password = System.getenv("GITHUB_TOKEN") ?: ""
             }
         }
-        gradlePluginPortal()
-    }
-}
-
-dependencyResolutionManagement {
-    repositories {
-        google()
-        mavenCentral()
     }
 }
 
