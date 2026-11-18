@@ -1,6 +1,6 @@
 {
   "name": "Nijatva Music",
-  "short_name": "Music",
+  "short_name": "Nijatva Music",
   "description": "Offline music player for the audio files on your device. No accounts, no ads, no analytics.",
   "start_url": "./",
   "scope": "./",
